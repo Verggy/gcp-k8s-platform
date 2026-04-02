@@ -1,3 +1,5 @@
+# helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -f helm/ingress-nginx/values.yaml
+
 controller:
   nodeSelector:
     purpose: infra
@@ -23,7 +25,7 @@ controller:
     annotations:
       cloud.google.com/l4-rbs: "enabled"
 
-    loadBalancerIP: "34.116.178.179"
+    loadBalancerIP: "34.118.115.97"
 
   ingressClassResource:
     name: nginx

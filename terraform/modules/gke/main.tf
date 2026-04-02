@@ -1,9 +1,9 @@
 resource "google_container_cluster" "main-cluster" {
-  name     = "${var.environment}-cluster"
+  name     = var.name
   location = var.region
 
-  network    = google_compute_network.vpc.id
-  subnetwork = google_compute_subnetwork.subnet.id
+  network    = var.vpc_id
+  subnetwork = var.subnet_id
 
   remove_default_node_pool = true
   initial_node_count       = 1
@@ -11,11 +11,11 @@ resource "google_container_cluster" "main-cluster" {
 
   # prevents SSD quota exhaustion during bootstrap, deleted by remove_default_node_pool
   node_config {
-    disk_type    = "pd-standard"
+    disk_type = "pd-standard"
   }
 
   cluster_autoscaling {
-    enabled             = false
+    enabled = false
   }
 
   logging_config {
@@ -57,8 +57,6 @@ resource "google_container_cluster" "main-cluster" {
     channel = "REGULAR"
   }
 
-  depends_on = [google_compute_router_nat.nat]
-
   resource_labels = {
     env = var.environment
   }
@@ -66,40 +64,40 @@ resource "google_container_cluster" "main-cluster" {
 
 
 resource "google_container_node_pool" "web-nodes" {
-  name       = "web-node-pool"
-  cluster    = google_container_cluster.main-cluster.id
-  location   = var.region
+  name     = "web-node-pool"
+  cluster  = google_container_cluster.main-cluster.id
+  location = var.region
 
   autoscaling {
-     location_policy = "BALANCED"
-     total_min_node_count = 1
-     total_max_node_count = 9
-   }
+    location_policy      = "BALANCED"
+    total_min_node_count = var.web_total_min_node_count
+    total_max_node_count = var.web_total_max_node_count
+  }
 
-   upgrade_settings {
-     strategy        = "SURGE"
-     max_surge       = 1
-     max_unavailable = 0
-   }
+  upgrade_settings {
+    strategy        = "SURGE"
+    max_surge       = 1
+    max_unavailable = 0
+  }
 
   node_config {
-    machine_type = "e2-small"
+    machine_type = var.web_node_machine_type
     disk_size_gb = 30
     disk_type    = "pd-standard" #  web-node is stateles, avoids SSD quota consumption
-    spot         = true # decided to use spot vms here as this node pool is for stateless webapp
+    spot         = true          # decided to use spot vms here as this node pool is for stateless webapp
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
 
     labels = {
-      env = var.environment
+      env     = var.environment
       purpose = "web-node"
     }
 
     shielded_instance_config {
-        enable_secure_boot          = true
-        enable_integrity_monitoring = true
+      enable_secure_boot          = true
+      enable_integrity_monitoring = true
     }
   }
 
@@ -115,15 +113,15 @@ resource "google_container_node_pool" "infra-nodes" {
   location = var.region
 
   autoscaling {
-    location_policy    = "BALANCED"
-    total_min_node_count = 2
-    total_max_node_count = 6
+    location_policy      = "BALANCED"
+    total_min_node_count = var.infra_total_min_node_count
+    total_max_node_count = var.infra_total_max_node_count
   }
   node_config {
-    machine_type = "e2-small"
+    machine_type = var.infra_node_machine_type
     disk_size_gb = 20
     disk_type    = "pd-standard"
-    spot         = false  # critical — no downtime is crucial
+    spot         = false # critical — no downtime is crucial
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"

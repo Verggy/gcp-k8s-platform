@@ -1,11 +1,11 @@
 resource "google_compute_router" "router" {
-  name    = "${var.environment}-router"
+  name    = var.router_name
   region  = var.region
   network = google_compute_network.vpc.id
 }
 
 resource "google_compute_router_nat" "nat" {
-  name                               = "${var.environment}-nat-gateway"
+  name                               = var.nat_gateway_name
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"

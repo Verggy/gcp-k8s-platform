@@ -6,7 +6,7 @@ fullnameOverride: external-secrets-operator
 serviceAccount:
   name: external-secrets-operator
   annotations:
-    iam.gke.io/gcp-service-account: dev-external-secrets-operator@monitoring-stack-490400.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: dev-external-secrets-operator@platform-dev-e7b0024c.iam.gserviceaccount.com
 
 nodeSelector:
   purpose: infra

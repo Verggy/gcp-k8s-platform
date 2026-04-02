@@ -11,10 +11,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - shop.terraform-portfolio.cloud
+        - dev-shop.terraform-portfolio.cloud
       secretName: online-boutique-tls
   rules:
-    - host: shop.terraform-portfolio.cloud
+    - host: dev-shop.terraform-portfolio.cloud
       http:
         paths:
           - path: /
