@@ -69,7 +69,7 @@ module "gh_oidc" {
   sa_mapping = {
     "terraform" = {
       sa_name   = "projects/${var.gcp_project_id}/serviceAccounts/terraform@${var.gcp_project_id}.iam.gserviceaccount.com"
-      attribute = "attribute.repository/verggy/gcp-k8s-platform"
+      attribute = "attribute.repository/Verggy/gcp-k8s-platform"
     }
   }
   depends_on = [google_project_service.apis]
@@ -83,4 +83,5 @@ resource "google_service_account_iam_member" "github_token_creator" {
   service_account_id = "projects/${var.gcp_project_id}/serviceAccounts/terraform@${var.gcp_project_id}.iam.gserviceaccount.com"
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/Verggy/gcp-k8s-platform"
+  depends_on         = [module.gh_oidc]
 }
