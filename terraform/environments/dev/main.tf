@@ -74,3 +74,13 @@ module "gh_oidc" {
   }
   depends_on = [google_project_service.apis]
 }
+
+data "google_project" "current" {
+  project_id = var.gcp_project_id
+}
+
+resource "google_service_account_iam_member" "github_token_creator" {
+  service_account_id = "projects/${var.gcp_project_id}/serviceAccounts/terraform@${var.gcp_project_id}.iam.gserviceaccount.com"
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/Verggy/gcp-k8s-platform"
+}
