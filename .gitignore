@@ -1,3 +1,7 @@
-*.tfvars
+# Ignore tfvars by default to prevent accidental secret commits
+**.tfvars
+# Allow non-sensitive environment tfvars
+!terraform/environments/dev/terraform.tfvars
+!terraform/environments/prod/terraform.tfvars
 **/.terraform*
 *.tfstate*

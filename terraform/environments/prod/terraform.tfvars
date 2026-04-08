@@ -1,0 +1,6 @@
+gcp_project_id = "platform-prod-813738c6"
+environment    = "prod"
+region         = "europe-central2"
+vpc_cidr       = "10.0.0.0/24"
+pods_cidr      = "10.1.0.0/16"
+services_cidr  = "10.2.0.0/16"

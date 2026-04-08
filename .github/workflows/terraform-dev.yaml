@@ -1,0 +1,53 @@
+name: Terraform Dev
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/environments/dev/**"
+      - "terraform/modules/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "terraform/environments/dev/**"
+      - "terraform/modules/**"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_cloudflare_token: ${{ secrets.cloudflare_token }}
+      TF_VAR_cloudflare_zone_id: ${{ secrets.cloudflare_zone_id }}
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -1,5 +1,3 @@
-# helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -f helm/ingress-nginx/values.yaml
-
 controller:
   nodeSelector:
     purpose: infra

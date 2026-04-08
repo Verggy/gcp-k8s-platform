@@ -13,16 +13,16 @@ variable "cloudflare_zone_id" {
 }
 
 variable "root_record" {
-  type = string
+  type    = string
   default = null
 }
 
 variable "www_record" {
-  type = string
+  type    = string
   default = null
 }
 
 variable "shop_record" {
-  type = string
+  type    = string
   default = null
 }

@@ -1,10 +1,10 @@
- resource "google_secret_manager_secret" "cloudflare_token" {
-    secret_id = "cloudflare-api-token"
-    project   = var.gcp_project_id
-    replication {
-      auto {}
-    }
+resource "google_secret_manager_secret" "cloudflare_token" {
+  secret_id = "cloudflare-api-token"
+  project   = var.gcp_project_id
+  replication {
+    auto {}
   }
+}
 
 resource "google_secret_manager_secret_version" "cloudflare_token" {
   secret      = google_secret_manager_secret.cloudflare_token.name

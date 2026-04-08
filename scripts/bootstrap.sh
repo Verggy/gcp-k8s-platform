@@ -35,15 +35,22 @@ command -v openssl >/dev/null || { echo "ERROR: openssl not found"; exit 1; }
 [[ -z "$BILLING_ACCOUNT_ID" ]] && { echo "ERROR: --billing-account is required"; usage; }
 
 echo "Verifying org and billing account..."
-gcloud organizations describe $ORG_ID &>/dev/null \
+gcloud organizations describe "$ORG_ID" &>/dev/null \
   || { echo "ERROR: Organization $ORG_ID not found or no access"; exit 1; }
-gcloud billing accounts describe $BILLING_ACCOUNT_ID &>/dev/null \
+gcloud billing accounts describe "$BILLING_ACCOUNT_ID" &>/dev/null \
   || { echo "ERROR: Billing account $BILLING_ACCOUNT_ID not found or no access"; exit 1; }
 
 STATE_PROJECT_ID="platform-tf-state-$(openssl rand -hex 4)"
 DEV_PROJECT_ID="platform-dev-$(openssl rand -hex 4)"
 PROD_PROJECT_ID="platform-prod-$(openssl rand -hex 4)"
 CURRENT_USER=$(gcloud config get-value account)
+TERRAFORM_SA_ROLES=(
+  roles/editor
+  roles/iam.serviceAccountAdmin
+  roles/resourcemanager.projectIamAdmin
+  roles/iam.workloadIdentityPoolAdmin
+  roles/secretmanager.secretAccessor
+)
 
 echo "[1/5] Creating projects..."
 for PROJECT_ID in $STATE_PROJECT_ID $DEV_PROJECT_ID $PROD_PROJECT_ID; do
@@ -73,7 +80,7 @@ sleep 10 # gcp needs some time to create account
 
 echo "[5/5] Assigning IAM roles..."
 for PROJECT_ID in $DEV_PROJECT_ID $PROD_PROJECT_ID; do
-  for ROLE in roles/editor roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin; do
+  for ROLE in "${TERRAFORM_SA_ROLES[@]}"; do
     gcloud projects add-iam-policy-binding $PROJECT_ID \
       --member="serviceAccount:terraform@$PROJECT_ID.iam.gserviceaccount.com" \
       --role=$ROLE \

@@ -1,0 +1,6 @@
+gcp_project_id = "platform-dev-e7b0024c"
+environment    = "dev"
+region         = "europe-central2"
+vpc_cidr       = "10.10.0.0/24"
+pods_cidr      = "10.11.0.0/16"
+services_cidr  = "10.12.0.0/16"

@@ -1,8 +1,12 @@
 resource "google_project_service" "apis" {
   for_each = toset([
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
     "container.googleapis.com",
     "compute.googleapis.com",
-    "secretmanager.googleapis.com"
+    "secretmanager.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "sts.googleapis.com"
   ])
   service            = each.key
   disable_on_destroy = false
@@ -47,4 +51,39 @@ module "dns" {
   www_record         = "www"
   shop_record        = "shop"
   depends_on         = [google_project_service.apis]
+}
+
+module "external-secrets" {
+  source           = "../../modules/external-secrets"
+  gcp_project_id   = var.gcp_project_id
+  cloudflare_token = var.cloudflare_token
+  environment      = var.environment
+  depends_on       = [google_project_service.apis]
+}
+
+module "gh_oidc" {
+  source              = "terraform-google-modules/github-actions-runners/google//modules/gh-oidc"
+  version             = "~> 5.0"
+  project_id          = var.gcp_project_id
+  pool_id             = "github-pool"
+  provider_id         = "github-provider"
+  attribute_condition = "assertion.repository == 'Verggy/gcp-k8s-platform'"
+  sa_mapping = {
+    "terraform" = {
+      sa_name   = "projects/${var.gcp_project_id}/serviceAccounts/terraform@${var.gcp_project_id}.iam.gserviceaccount.com"
+      attribute = "attribute.repository/Verggy/gcp-k8s-platform"
+    }
+  }
+  depends_on = [google_project_service.apis]
+}
+
+data "google_project" "current" {
+  project_id = var.gcp_project_id
+}
+
+resource "google_service_account_iam_member" "github_token_creator" {
+  service_account_id = "projects/${var.gcp_project_id}/serviceAccounts/terraform@${var.gcp_project_id}.iam.gserviceaccount.com"
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/Verggy/gcp-k8s-platform"
+  depends_on         = [module.gh_oidc]
 }
