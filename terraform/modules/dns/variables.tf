@@ -26,3 +26,8 @@ variable "shop_record" {
   type    = string
   default = null
 }
+
+variable "grafana_record" {
+  type    = string
+  default = null
+}

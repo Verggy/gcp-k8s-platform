@@ -1,0 +1,125 @@
+grafana:
+  enabled: false
+
+crds:
+  enabled: false # separate installation of crds in helmfile
+
+prometheus:
+  prometheusSpec:
+    nodeSelector:
+      purpose: infra
+    tolerations:
+      - key: purpose
+        value: infra
+        effect: NoSchedule
+
+    externalLabels:
+      cluster: {{ .Values.env }}
+
+    retention: 15d
+    retentionSize: "8GB"
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard-rwo
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 768Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
+    serviceMonitorSelector: {}
+
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorNamespaceSelector: {}
+    podMonitorSelector: {}
+
+    ruleSelectorNilUsesHelmValues: false
+    ruleNamespaceSelector: {}
+    ruleSelector: {}
+
+    securityContext:
+      runAsNonRoot: true
+      fsGroup: 65534
+
+  service:
+    type: ClusterIP
+
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector:
+      purpose: infra
+    tolerations:
+      - key: purpose
+        value: infra
+        effect: NoSchedule
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: "null"
+      group_by: [alertname, namespace]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - receiver: "null"
+          matchers:
+            - alertname = Watchdog
+    receivers:
+      - name: "null"
+
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  tolerations:
+    - operator: Exists
+
+kube-state-metrics:
+  nodeSelector:
+    purpose: infra
+  tolerations:
+    - key: purpose
+      value: infra
+      effect: NoSchedule
+
+defaultRules:
+  create: true
+  rules:
+    etcd: false
+    kubeScheduler: false
+    kubeControllerManager: false
+    kubeProxy: false
+    coreDns: false
+
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeProxy:
+  enabled: false
+coreDns:
+  enabled: false

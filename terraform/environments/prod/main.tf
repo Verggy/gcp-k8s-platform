@@ -38,7 +38,7 @@ module "gke" {
   web_node_machine_type      = "e2-medium"
   infra_total_min_node_count = 1
   infra_total_max_node_count = 9
-  infra_node_machine_type    = "e2-small"
+  infra_node_machine_type    = "e2-medium"
   depends_on                 = [module.vpc]
 }
 
@@ -50,6 +50,7 @@ module "dns" {
   root_record        = "@"
   www_record         = "www"
   shop_record        = "shop"
+  grafana_record     = "grafana"
   depends_on         = [google_project_service.apis]
 }
 

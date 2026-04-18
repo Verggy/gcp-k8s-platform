@@ -1,5 +1,12 @@
-crds:
-  enabled: true
+installCRDs: true
+
+nameOverride: external-secrets-operator
+fullnameOverride: external-secrets-operator
+
+serviceAccount:
+  name: external-secrets-operator
+  annotations:
+    iam.gke.io/gcp-service-account: {{ .Values.env }}-external-secrets-operator@{{ .Values.project_id }}.iam.gserviceaccount.com
 
 nodeSelector:
   purpose: infra
@@ -23,33 +30,11 @@ webhook:
     - key: purpose
       value: infra
       effect: NoSchedule
-  resources:
-    requests:
-      cpu: 25m
-      memory: 32Mi
-    limits:
-      cpu: 100m
-      memory: 64Mi
 
-cainjector:
+certController:
   nodeSelector:
     purpose: infra
   tolerations:
     - key: purpose
       value: infra
       effect: NoSchedule
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 200m
-      memory: 128Mi
-
-prometheus:
-  enabled: true
-  servicemonitor:
-    enabled: true
-
-global:
-  logLevel: 2

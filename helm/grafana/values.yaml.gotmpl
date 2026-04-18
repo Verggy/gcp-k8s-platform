@@ -1,0 +1,168 @@
+replicas: 1
+
+nodeSelector:
+  purpose: infra
+
+tolerations:
+  - key: purpose
+    value: infra
+    effect: NoSchedule
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+serviceAccount:
+  create: true
+  name: grafana
+  annotations: {}
+
+admin:
+  existingSecret: grafana-admin
+  userKey: admin-user
+  passwordKey: admin-password
+
+persistence:
+  enabled: true
+  type: pvc
+  size: 10Gi
+  storageClassName: standard-rwo
+  accessModes:
+    - ReadWriteOnce
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 384Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - {{ .Values.grafana_host }}
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - {{ .Values.grafana_host }}
+
+grafana.ini:
+  server:
+    root_url: https://{{ .Values.grafana_host }}
+
+  auth:
+    disable_login_form: false
+    disable_signout_menu: false
+
+  auth.anonymous:
+    enabled: false
+
+  users:
+    allow_sign_up: false
+    allow_org_create: false
+
+  security:
+    admin_user: admin
+    cookie_secure: true
+    strict_transport_security: true
+    x_content_type_options: true
+    x_xss_protection: true
+
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+    check_for_plugin_updates: false
+
+  log:
+    mode: console
+    level: info
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus
+        type: prometheus
+        url: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true
+        editable: false
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'grafana-dashboards-kubernetes'
+        orgId: 1
+        folder: 'Kubernetes'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
+
+dashboards:
+  grafana-dashboards-kubernetes:
+    k8s-system-api-server:
+      gnetId: 15761
+      revision: 21
+      datasource: Prometheus
+    k8s-views-global:
+      gnetId: 15757
+      revision: 43
+      datasource: Prometheus
+    k8s-views-namespaces:
+      gnetId: 15758
+      revision: 46
+      datasource: Prometheus
+    k8s-views-nodes:
+      gnetId: 15759
+      revision: 40
+      datasource: Prometheus
+    k8s-views-pods:
+      gnetId: 15760
+      revision: 39
+      datasource: Prometheus
+    node-exporter:
+      gnetId: 1860
+      revision: 45
+      datasource: Prometheus
+    ingress-nginx:
+      gnetId: 14314
+      revision: 2
+      datasource: Prometheus
+
+plugins: []
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: ALL
+  datasources:
+    enabled: false
+
+securityContext:
+  runAsUser: 472
+  runAsGroup: 472
+  fsGroup: 472
+
+containerSecurityContext:
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+
+podAnnotations: {}

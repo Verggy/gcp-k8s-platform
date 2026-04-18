@@ -1,0 +1,111 @@
+environments:
+  dev:
+    values:
+      - helm-environments/dev.yaml
+  prod:
+    values:
+      - helm-environments/prod.yaml
+---
+repositories:
+  - name: external-secrets
+    url: https://charts.external-secrets.io
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - name: external-secrets
+    namespace: external-secrets-operator
+    chart: external-secrets/external-secrets
+    createNamespace: true
+    wait: true
+    values:
+      - helm/external-secrets-operator/values.yaml.gotmpl
+
+  - name: cert-manager
+    namespace: cert-manager
+    chart: jetstack/cert-manager
+    createNamespace: true
+    wait: true
+    needs:
+      - external-secrets-operator/external-secrets
+    values:
+      - helm/cert-manager/values.yaml
+
+  - name: prometheus-crds
+    namespace: monitoring
+    chart: prometheus-community/prometheus-operator-crds
+    createNamespace: true
+
+  - name: external-secrets-config
+    namespace: external-secrets-operator
+    chart: helm/external-secrets-operator/cluster-resources
+    wait: true
+    needs:
+      - external-secrets-operator/external-secrets
+      - cert-manager/cert-manager
+      - monitoring/prometheus-crds
+    values:
+      - helm/external-secrets-operator/cluster-resources/values.yaml.gotmpl
+    hooks:
+      - events: ["postsync"]
+        showlogs: true
+        command: "kubectl"
+        args:
+          - "apply"
+          - "-f"
+          - "helm/cert-manager/cluster-issuer.yaml"
+
+  - name: ingress-nginx
+    namespace: ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    createNamespace: true
+    wait: true
+    needs:
+      - external-secrets-operator/external-secrets-config
+      - monitoring/prometheus-crds
+    values:
+      - helm/ingress-nginx/values.yaml.gotmpl
+
+  - name: prometheus
+    namespace: monitoring
+    chart: prometheus-community/kube-prometheus-stack
+    createNamespace: true
+    wait: true
+    needs:
+      - cert-manager/cert-manager
+      - monitoring/prometheus-crds
+    values:
+      - helm/prometheus/values.yaml.gotmpl
+
+  - name: grafana
+    namespace: monitoring
+    chart: grafana/grafana
+    needs:
+      - monitoring/prometheus
+    values:
+      - helm/grafana/values.yaml.gotmpl
+
+  - name: online-boutique
+    namespace: webapp
+    chart: oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique
+    version: 0.10.5
+    createNamespace: true
+    needs:
+      - ingress-nginx/ingress-nginx
+    values:
+      - helm/online-boutique/values.yaml
+
+  - name: online-boutique-ingress
+    namespace: webapp
+    chart: helm/online-boutique/ingress-chart
+    needs:
+      - cert-manager/cert-manager
+      - webapp/online-boutique
+    values:
+      - helm/online-boutique/ingress-chart/values.yaml.gotmpl
