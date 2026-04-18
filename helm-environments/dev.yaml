@@ -1,0 +1,5 @@
+env: dev
+project_id: platform-dev-e7b0024c
+ingress_ip: "34.118.115.97"
+grafana_host: dev-grafana.terraform-portfolio.cloud
+shop_host: dev-shop.terraform-portfolio.cloud

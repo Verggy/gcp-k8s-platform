@@ -34,11 +34,11 @@ module "gke" {
   vpc_id                     = module.vpc.vpc_id
   subnet_id                  = module.vpc.subnet_id
   web_total_min_node_count   = 1
-  web_total_max_node_count   = 4
+  web_total_max_node_count   = 5
   web_node_machine_type      = "e2-medium"
   infra_total_min_node_count = 1
   infra_total_max_node_count = 3
-  infra_node_machine_type    = "e2-small"
+  infra_node_machine_type    = "e2-medium"
   depends_on                 = [module.vpc]
 }
 
@@ -48,6 +48,7 @@ module "dns" {
   ingress_ip_name    = "dev-ingress-ip"
   cloudflare_zone_id = var.cloudflare_zone_id
   shop_record        = "dev-shop"
+  grafana_record     = "dev-grafana"
   depends_on         = [google_project_service.apis]
 }
 

@@ -27,3 +27,32 @@ resource "google_service_account_iam_member" "eso_workload_identity" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.gcp_project_id}.svc.id.goog[external-secrets-operator/external-secrets-operator]"
 }
+
+resource "random_password" "grafana_admin" {
+  length  = 24
+  special = true
+  # exclude chars that cause shell/YAML escaping headaches
+  override_special = "!@#$%^&*()-_=+[]{}"
+}
+
+resource "google_secret_manager_secret" "grafana_admin" {
+  secret_id = "grafana-admin"
+  project   = var.gcp_project_id
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "grafana_admin" {
+  secret = google_secret_manager_secret.grafana_admin.name
+  secret_data = jsonencode({
+    admin-user     = "admin"
+    admin-password = random_password.grafana_admin.result
+  })
+}
+
+resource "google_secret_manager_secret_iam_member" "eso_grafana_admin" {
+  secret_id = google_secret_manager_secret.grafana_admin.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.eso.email}"
+}

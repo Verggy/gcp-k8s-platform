@@ -1,0 +1,4 @@
+apiVersion: v2
+name: online-boutique-ingress
+version: 0.1.0
+description: Ingress resource for Online Boutique

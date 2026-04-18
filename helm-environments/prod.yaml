@@ -1,0 +1,5 @@
+env: prod
+project_id: platform-prod-813738c6
+ingress_ip: "34.118.108.71"
+grafana_host: grafana.terraform-portfolio.cloud
+shop_host: shop.terraform-portfolio.cloud

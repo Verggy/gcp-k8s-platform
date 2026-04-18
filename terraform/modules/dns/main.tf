@@ -32,3 +32,13 @@ resource "cloudflare_record" "shop" {
   ttl     = 3600
   proxied = false
 }
+
+resource "cloudflare_record" "grafana" {
+  count   = var.grafana_record != null ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+  name    = var.grafana_record
+  content = google_compute_address.ingress_ip.address
+  type    = "A"
+  ttl     = 3600
+  proxied = false
+}
