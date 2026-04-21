@@ -82,6 +82,14 @@ releases:
       - monitoring/prometheus-crds
     values:
       - helm/prometheus/values.yaml.gotmpl
+    hooks:
+      - events: ["postsync"]
+        showlogs: true
+        command: "kubectl"
+        args:
+          - "apply"
+          - "-f"
+          - "helm/prometheus/rules/"
 
   - name: grafana
     namespace: monitoring
@@ -90,6 +98,24 @@ releases:
       - monitoring/prometheus
     values:
       - helm/grafana/values.yaml.gotmpl
+
+  - name: loki
+    namespace: monitoring
+    chart: grafana/loki
+    wait: true
+    needs:
+      - monitoring/prometheus
+      - monitoring/prometheus-crds
+    values:
+      - helm/loki/values.yaml.gotmpl
+
+  - name: promtail
+    namespace: monitoring
+    chart: grafana/promtail
+    needs:
+      - monitoring/loki
+    values:
+      - helm/promtail/values.yaml
 
   - name: online-boutique
     namespace: webapp

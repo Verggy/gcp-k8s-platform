@@ -6,7 +6,8 @@ resource "google_project_service" "apis" {
     "compute.googleapis.com",
     "secretmanager.googleapis.com",
     "cloudresourcemanager.googleapis.com",
-    "sts.googleapis.com"
+    "sts.googleapis.com",
+    "storage.googleapis.com"
   ])
   service            = each.key
   disable_on_destroy = false
@@ -34,11 +35,11 @@ module "gke" {
   vpc_id                     = module.vpc.vpc_id
   subnet_id                  = module.vpc.subnet_id
   web_total_min_node_count   = 1
-  web_total_max_node_count   = 6
-  web_node_machine_type      = "e2-medium"
+  web_total_max_node_count   = 8
+  web_node_machine_type      = "e2-custom-2-4096"
   infra_total_min_node_count = 1
-  infra_total_max_node_count = 9
-  infra_node_machine_type    = "e2-medium"
+  infra_total_max_node_count = 5
+  infra_node_machine_type    = "e2-custom-2-4096"
   depends_on                 = [module.vpc]
 }
 
@@ -59,5 +60,13 @@ module "external-secrets" {
   gcp_project_id   = var.gcp_project_id
   cloudflare_token = var.cloudflare_token
   environment      = var.environment
+  depends_on       = [google_project_service.apis]
+}
+
+module "loki" {
+  source          = "../../modules/loki"
+  gcp_project_id  = var.gcp_project_id
+  region          = var.region
+  environment     = var.environment
   depends_on       = [google_project_service.apis]
 }

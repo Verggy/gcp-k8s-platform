@@ -31,11 +31,11 @@ prometheus:
 
     resources:
       requests:
-        cpu: 250m
+        cpu: 100m
         memory: 768Mi
       limits:
         cpu: "1"
-        memory: 2Gi
+        memory: 1.5Gi
 
     serviceMonitorSelectorNilUsesHelmValues: false
     serviceMonitorNamespaceSelector: {}
@@ -55,6 +55,21 @@ prometheus:
 
   service:
     type: ClusterIP
+
+prometheusOperator:
+  nodeSelector:
+    purpose: infra
+  tolerations:
+    - key: purpose
+      value: infra
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 alertmanager:
   alertmanagerSpec:
@@ -89,6 +104,7 @@ alertmanager:
     receivers:
       - name: "null"
 
+
 nodeExporter:
   enabled: true
 
@@ -103,6 +119,13 @@ kube-state-metrics:
     - key: purpose
       value: infra
       effect: NoSchedule
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
 
 defaultRules:
   create: true
