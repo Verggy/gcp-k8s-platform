@@ -49,3 +49,16 @@ resource "google_service_account_iam_member" "github_token_creator_prod" {
   member             = "principalSet://iam.googleapis.com/projects/${data.google_project.prod.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/Verggy/gcp-k8s-platform"
   depends_on         = [module.gh_oidc_prod]
 }
+
+# Allows Terraform SA to manage GCS buckets (required for Loki chunks bucket)
+resource "google_project_iam_member" "terraform_sa_storage_admin_dev" {
+  project = var.dev_project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:terraform@${var.dev_project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "terraform_sa_storage_admin_prod" {
+  project = var.prod_project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:terraform@${var.prod_project_id}.iam.gserviceaccount.com"
+}

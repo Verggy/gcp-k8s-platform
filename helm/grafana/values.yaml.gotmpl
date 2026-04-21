@@ -25,20 +25,15 @@ admin:
   passwordKey: admin-password
 
 persistence:
-  enabled: true
-  type: pvc
-  size: 10Gi
-  storageClassName: standard-rwo
-  accessModes:
-    - ReadWriteOnce
+  enabled: false
 
 resources:
   requests:
-    cpu: 200m
-    memory: 384Mi
+    cpu: 100m
+    memory: 128Mi
   limits:
-    cpu: 500m
-    memory: 768Mi
+    cpu: 300m
+    memory: 512Mi
 
 service:
   type: ClusterIP
@@ -100,11 +95,25 @@ datasources:
         access: proxy
         isDefault: true
         editable: false
+      - name: Loki
+        uid: loki
+        type: loki
+        url: http://loki.monitoring.svc.cluster.local:3100
+        access: proxy
+        editable: false
 
 dashboardProviders:
   dashboardproviders.yaml:
     apiVersion: 1
     providers:
+      - name: 'default'
+        orgId: 1
+        folder: 'Default'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
       - name: 'grafana-dashboards-kubernetes'
         orgId: 1
         folder: 'Kubernetes'
@@ -112,9 +121,27 @@ dashboardProviders:
         disableDeletion: true
         editable: true
         options:
-          path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
+          path: /var/lib/grafana/dashboards/kubernetes
+      - name: 'grafana-dashboards-logs'
+        orgId: 1
+        folder: 'Logs'
+        type: file
+        disableDeletion: true
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/logs
 
 dashboards:
+  default:
+    ingress-nginx:
+      gnetId: 14314
+      revision: 2
+      datasource: Prometheus
+    node-exporter:
+      gnetId: 1860
+      revision: 45
+      datasource: Prometheus
+
   grafana-dashboards-kubernetes:
     k8s-system-api-server:
       gnetId: 15761
@@ -136,14 +163,20 @@ dashboards:
       gnetId: 15760
       revision: 39
       datasource: Prometheus
-    node-exporter:
-      gnetId: 1860
-      revision: 45
-      datasource: Prometheus
-    ingress-nginx:
-      gnetId: 14314
-      revision: 2
-      datasource: Prometheus
+
+  grafana-dashboards-logs:
+    loki-promtail:
+      gnetId: 14055
+      revision: 5
+      datasource:
+        - name: DS_PROMETHEUS
+          value: Prometheus
+        - name: DS_LOKI
+          value: Loki
+    container-logs:
+      gnetId: 16966
+      revision: 1
+      datasource: Loki
 
 plugins: []
 

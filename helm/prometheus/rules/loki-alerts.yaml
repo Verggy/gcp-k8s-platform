@@ -1,0 +1,48 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: loki-stack-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  groups:
+    - name: loki-stack
+      rules:
+        - alert: LokiIngesterDown
+          expr: up{job="monitoring/loki"} == 0 or absent(up{job="monitoring/loki"})
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Loki is down — logs are not being ingested"
+
+        - alert: LokiRequestErrors
+          expr: |
+            sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m]))
+              / sum(rate(loki_request_duration_seconds_count[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Loki 5xx rate above 5% — ingestion or query path degraded"
+
+        - alert: PromtailDroppedLogs
+          expr: rate(promtail_dropped_entries_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Promtail dropping log entries — Loki pushback or backpressure"
+
+        - alert: ElevatedAppErrorLogs
+          expr: |
+            sum by (namespace, app) (
+              rate(promtail_custom_log_messages_total{level="error"}[5m])
+            ) > 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.app }} in {{ $labels.namespace }} is logging errors at >1/s"
+            description: 'Check logs: {app="{{ $labels.app }}"} |= "error"'
