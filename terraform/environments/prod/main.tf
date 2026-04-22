@@ -52,6 +52,7 @@ module "dns" {
   www_record         = "www"
   shop_record        = "shop"
   grafana_record     = "grafana"
+  argocd_record      = "argocd"
   depends_on         = [google_project_service.apis]
 }
 

@@ -50,6 +50,7 @@ module "dns" {
   cloudflare_zone_id = var.cloudflare_zone_id
   shop_record        = "dev-shop"
   grafana_record     = "dev-grafana"
+  argocd_record      = "dev-argocd"
   depends_on         = [google_project_service.apis]
 }
 

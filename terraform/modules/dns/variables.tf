@@ -31,3 +31,8 @@ variable "grafana_record" {
   type    = string
   default = null
 }
+
+variable "argocd_record" {
+  type    = string
+  default = null
+}

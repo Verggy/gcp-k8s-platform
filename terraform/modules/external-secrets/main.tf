@@ -56,3 +56,37 @@ resource "google_secret_manager_secret_iam_member" "eso_grafana_admin" {
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.eso.email}"
 }
+
+resource "random_password" "argocd_admin" {
+  length           = 24
+  special          = true
+  override_special = "!@#$%^&*()-_=+[]{}"
+}
+
+resource "random_password" "argocd_server_key" {
+  length  = 32
+  special = false
+}
+
+resource "google_secret_manager_secret" "argocd_admin" {
+  secret_id = "argocd-admin"
+  project   = var.gcp_project_id
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "argocd_admin" {
+  secret = google_secret_manager_secret.argocd_admin.name
+  secret_data = jsonencode({
+    password      = random_password.argocd_admin.result
+    password-hash = bcrypt(random_password.argocd_admin.result)
+    server-key    = random_password.argocd_server_key.result
+  })
+}
+
+resource "google_secret_manager_secret_iam_member" "eso_argocd_admin" {
+  secret_id = google_secret_manager_secret.argocd_admin.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.eso.email}"
+}
