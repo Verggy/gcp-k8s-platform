@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: loki
+  name: promtail
   namespace: argocd
 spec:
   generators:
@@ -11,26 +11,16 @@ spec:
             argocd.argoproj.io/secret-type: cluster
   template:
     metadata:
-      name: loki
+      name: promtail
     spec:
       project: default
       sources:
         - repoURL: "https://grafana.github.io/helm-charts"
-          chart: loki
-          targetRevision: "6.55.0"
+          chart: promtail
+          targetRevision: "6.17.1"
           helm:
             valueFiles:
-              - $values/helm/loki/values.yaml
-            values: |
-              loki:
-                storage:
-                  bucketNames:
-                    chunks: "{{metadata.labels.project_id}}-loki-chunks"
-                    ruler: "{{metadata.labels.project_id}}-loki-chunks"
-                    admin: "{{metadata.labels.project_id}}-loki-chunks"
-              serviceAccount:
-                annotations:
-                  iam.gke.io/gcp-service-account: "{{metadata.labels.env}}-loki@{{metadata.labels.project_id}}.iam.gserviceaccount.com"
+              - $values/helm/promtail/values.yaml
         - repoURL: "{{metadata.annotations.repo_url}}"
           targetRevision: feat/argocd
           ref: values

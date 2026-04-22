@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: online-boutique-ingress
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            argocd.argoproj.io/secret-type: cluster
+  template:
+    metadata:
+      name: online-boutique-ingress
+    spec:
+      project: default
+      source:
+        repoURL: "{{metadata.annotations.repo_url}}"
+        targetRevision: feat/argocd
+        path: helm/online-boutique/ingress-chart
+        helm:
+          values: |
+            shop_host: "{{metadata.labels.shop_host}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: webapp
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

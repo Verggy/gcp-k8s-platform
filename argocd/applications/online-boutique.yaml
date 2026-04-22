@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: online-boutique
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            argocd.argoproj.io/secret-type: cluster
+  template:
+    metadata:
+      name: online-boutique
+    spec:
+      project: default
+      sources:
+        - repoURL: "oci://us-docker.pkg.dev/online-boutique-ci/charts/onlineboutique"
+          chart: onlineboutique
+          targetRevision: "0.10.5"
+          helm:
+            valueFiles:
+              - $values/helm/online-boutique/values.yaml
+        - repoURL: "{{metadata.annotations.repo_url}}"
+          targetRevision: feat/argocd
+          ref: values
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: webapp
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

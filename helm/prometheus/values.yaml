@@ -2,7 +2,7 @@ grafana:
   enabled: false
 
 crds:
-  enabled: false # separate installation of crds in helmfile
+  enabled: false
 
 prometheus:
   prometheusSpec:
@@ -12,9 +12,6 @@ prometheus:
       - key: purpose
         value: infra
         effect: NoSchedule
-
-    externalLabels:
-      cluster: {{ .Values.env }}
 
     retention: 15d
     retentionSize: "8GB"
@@ -103,7 +100,6 @@ alertmanager:
             - alertname = Watchdog
     receivers:
       - name: "null"
-
 
 nodeExporter:
   enabled: true

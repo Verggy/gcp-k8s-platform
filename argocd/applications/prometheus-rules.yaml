@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prometheus-rules
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            argocd.argoproj.io/secret-type: cluster
+  template:
+    metadata:
+      name: prometheus-rules
+    spec:
+      project: default
+      source:
+        repoURL: "{{metadata.annotations.repo_url}}"
+        targetRevision: feat/argocd
+        path: helm/prometheus/rules
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
