@@ -33,7 +33,7 @@ spec:
                 server:
                   root_url: "https://{{metadata.labels.grafana_host}}"
         - repoURL: "{{metadata.annotations.repo_url}}"
-          targetRevision: feat/argocd
+          targetRevision: main
           ref: values
       destination:
         server: https://kubernetes.default.svc

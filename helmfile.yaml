@@ -54,7 +54,7 @@ releases:
       - cert-manager/cert-manager
       - monitoring/prometheus-crds
     values:
-      - helm/external-secrets-operator/secret-store/values.yaml.gotmpl
+      - helm/external-secrets-operator/secret-store/project-id.yaml.gotmpl
     hooks:
       - events: ["postsync"]
         showlogs: true
@@ -100,7 +100,7 @@ releases:
     needs:
       - external-secrets-operator/external-secrets-config
     values:
-      - helm/argocd/secrets/values.yaml.gotmpl
+      - helm/argocd/secrets/environment-values.yaml.gotmpl
 
   - name: argocd
     namespace: argocd

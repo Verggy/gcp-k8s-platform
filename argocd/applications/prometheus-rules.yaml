@@ -16,7 +16,7 @@ spec:
       project: default
       source:
         repoURL: "{{metadata.annotations.repo_url}}"
-        targetRevision: feat/argocd
+        targetRevision: main
         path: helm/prometheus/rules
       destination:
         server: https://kubernetes.default.svc

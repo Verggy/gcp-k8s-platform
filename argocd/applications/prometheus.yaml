@@ -27,7 +27,7 @@ spec:
                   externalLabels:
                     cluster: "{{metadata.labels.env}}"
         - repoURL: "{{metadata.annotations.repo_url}}"
-          targetRevision: feat/argocd
+          targetRevision: main
           ref: values
       destination:
         server: https://kubernetes.default.svc

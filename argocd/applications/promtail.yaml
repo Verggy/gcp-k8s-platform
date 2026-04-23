@@ -22,7 +22,7 @@ spec:
             valueFiles:
               - $values/helm/promtail/values.yaml
         - repoURL: "{{metadata.annotations.repo_url}}"
-          targetRevision: feat/argocd
+          targetRevision: main
           ref: values
       destination:
         server: https://kubernetes.default.svc

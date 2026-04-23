@@ -16,7 +16,7 @@ spec:
       project: default
       source:
         repoURL: "{{metadata.annotations.repo_url}}"
-        targetRevision: feat/argocd
+        targetRevision: main
         path: helm/online-boutique/ingress-chart
         helm:
           values: |
