@@ -4,6 +4,8 @@ Infrastructure-as-code project that provisions a GKE cluster with production-sty
 
 Two environments (`dev` and `prod`) are provisioned from the same Terraform modules and reconciled into the same shape by ArgoCD; per-environment differences (project ID, hostnames, autoscaling caps) live in a single values file each.
 
+![alt text](https://github.com/Verggy/gcp-gke-gitops-stack/blob/main/docs/images/architecture.drawio.png "Diagram")
+
 ## Architecture
 
 The system has three layers:
