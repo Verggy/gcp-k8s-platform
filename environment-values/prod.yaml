@@ -5,3 +5,4 @@ ingress_ip: "x.x.x.x"
 grafana_host: grafana.<domain>
 shop_host: shop.<domain>
 argocd_host: argocd.<domain>
+acme_email: <email>

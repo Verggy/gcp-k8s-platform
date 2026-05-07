@@ -60,13 +60,6 @@ releases:
         showlogs: true
         command: "kubectl"
         args:
-          - "apply"
-          - "-f"
-          - "helm/cert-manager/cluster-issuer.yaml"
-      - events: ["postsync"]
-        showlogs: true
-        command: "kubectl"
-        args:
           - "wait"
           - "--for=condition=Ready"
           - "clustersecretstore/gcp-secret-manager"
@@ -79,6 +72,16 @@ releases:
     needs:
       - external-secrets-operator/external-secrets-config
       - cert-manager/cert-manager
+
+  - name: cluster-issuer
+    namespace: cert-manager
+    chart: helm/cert-manager/cluster-issuer
+    wait: true
+    needs:
+      - cert-manager/cert-manager
+      - cert-manager/cert-manager-secrets
+    values:
+      - helm/cert-manager/cluster-issuer/values.yaml.gotmpl
 
   - name: ingress-nginx
     namespace: ingress-nginx
