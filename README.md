@@ -132,7 +132,7 @@ In `environment-values/{dev,prod}.yaml` — replace `*.<domain>` host values wit
 ## Cluster bootstrap (Helmfile)
 
 ```bash
-gcloud container clusters get-credentials <env>-cluster --region europe-central2
+gcloud container clusters get-credentials <env>-cluster --region europe-central2 --project <project_id>
 
 helmfile -e dev sync      # apply in dependency order
 ```
