@@ -188,7 +188,7 @@ Three hostnames are exposed via ingress-nginx: `argocd.<domain>`, `grafana.<doma
 
 ```bash
 # Switch kubeconfig context
-gcloud container clusters get-credentials <env>-cluster --region europe-central2
+gcloud container clusters get-credentials <env>-cluster --region europe-central2 --project <project-id>
 
 # Get nodes with zones they're in
 kubectl get nodes -o custom-columns="NAME:.metadata.name,ZONE:.metadata.labels['topology\.kubernetes\.io/zone'],STATUS:.status.conditions[-1].type"
